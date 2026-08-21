@@ -1,0 +1,9 @@
+/out/
+/build*/
+/dist/
+/.qtcreator/
+/.qtc_clangd/
+*.user
+*.autosave
+*.bak
+/test-audio/01 - Angel Eyes.mp3
