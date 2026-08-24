@@ -12,6 +12,12 @@ overview and its transition into the detailed sample trace easier to verify.
 - `05-silent-right-channel.wav`: stereo file with a silent right channel.
 - `06-digital-silence.wav`: complete digital silence.
 - `07-low-sample-rate.wav`: mono audio at only 22.05 kHz.
+- `demo-track-clean.wav`: original 24-second stereo synthesis with
+  percussion, bass, chords and a short melody. It uses no samples or external
+  recording and is intended for screenshots and full-analysis demonstrations.
+- `demo-track-bad-rip.wav`: the same synthetic composition processed as a visibly
+  bad rip, with changing overdrive, hard clipping, DC offset, subsonic energy
+  and stereo imbalance. It contains no samples or external recording.
 
 Regenerate the files from the project root with:
 

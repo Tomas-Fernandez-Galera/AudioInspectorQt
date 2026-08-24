@@ -31,4 +31,4 @@ OTHER_FILES += \
     scripts/package-portable.ps1 \
     .gitignore
 
-DEFINES += AUDIOINSPECTOR_VERSION=0.1.0
+DEFINES += AUDIOINSPECTOR_VERSION=0.1.1

@@ -220,12 +220,27 @@ DspAnalysis analyzeDsp(const QVector<float> &left, const QVector<float> &right, 
     spectrumPainter.setPen(QPen(QColor("#2f82ff"), 1.6));
     spectrumPainter.drawPolyline(curve);
 
-    // El tempo se obtiene autocorrelacionando una envolvente de ataques. No se
+    // La FFT usa saltos grandes para ser eficiente, pero esa resolución es
+    // insuficiente para tempo. Creamos una envolvente independiente y ocho
+    // veces más densa para no cuantizar, por ejemplo, 120 BPM como 112 BPM.
+    onset.clear();
+    constexpr int tempoFrame = 1024, tempoHop = 256;
+    previousEnergy = 0.0;
+    for (int start = 0; start + tempoFrame <= count; start += tempoHop) {
+        double energy = 0.0;
+        for (int i = start; i < start + tempoFrame; ++i)
+            energy += mono[i] * mono[i];
+        energy = std::sqrt(energy / tempoFrame);
+        onset.append(qMax(0.0, energy - previousEnergy));
+        previousEnergy = energy;
+    }
+
+    // El tempo se obtiene autocorrelacionando la envolvente de ataques. No se
     // ofrece para menos de cuatro segundos porque el resultado sería engañoso.
     double bestCorrelation = 0;
-    int bestLag = 0, bestBpm = 0;
+    int bestBpm = 0;
     QVector<double> tempoCorrelations(201, 0.0);
-    const double envelopeRate = sampleRate / double(hop);
+    const double envelopeRate = sampleRate / double(tempoHop);
     for (int bpm = 60; bpm <= 200 && count >= sampleRate * 4; ++bpm) {
         const int lag = qRound(envelopeRate * 60.0 / bpm);
         double correlation = 0, norm = 0;
@@ -235,22 +250,66 @@ DspAnalysis analyzeDsp(const QVector<float> &left, const QVector<float> &right, 
         correlation /= qMax(1e-20, norm);
         tempoCorrelations[bpm] = correlation;
         if (correlation > bestCorrelation) {
-            bestCorrelation = correlation; bestLag = lag; bestBpm = bpm;
+            bestCorrelation = correlation; bestBpm = bpm;
         }
     }
+    // La autocorrelación suele favorecer el medio tempo cuando caja y acentos
+    // forman un patrón de dos pulsos. Comparamos explícitamente el candidato
+    // ganador con sus familias doble/mitad. Si el doble conserva al menos el
+    // 55 % de la periodicidad, preferimos el pulso musical situado en la zona
+    // habitual de 90–180 BPM. La ventana tolera el error de cuantización del hop.
+    int selectedBpm = bestBpm;
+    double selectedCorrelation = bestCorrelation;
+    if (bestBpm > 0 && bestBpm < 90) {
+        const int center = bestBpm * 2;
+        int doubleBpm = center;
+        double doubleCorrelation = 0.0;
+        for (int bpm = qMax(90, center - 2); bpm <= qMin(200, center + 2); ++bpm) {
+            if (tempoCorrelations[bpm] > doubleCorrelation) {
+                doubleCorrelation = tempoCorrelations[bpm];
+                doubleBpm = bpm;
+            }
+        }
+        if (doubleCorrelation >= bestCorrelation * .55) {
+            selectedBpm = doubleBpm;
+            selectedCorrelation = doubleCorrelation;
+        }
+    } else if (bestBpm > 180) {
+        const int center = bestBpm / 2;
+        int halfBpm = center;
+        double halfCorrelation = 0.0;
+        for (int bpm = qMax(60, center - 5); bpm <= qMin(120, center + 5); ++bpm) {
+            if (tempoCorrelations[bpm] > halfCorrelation) {
+                halfCorrelation = tempoCorrelations[bpm];
+                halfBpm = bpm;
+            }
+        }
+        if (halfCorrelation >= bestCorrelation * .70) {
+            selectedBpm = halfBpm;
+            selectedCorrelation = halfCorrelation;
+        }
+    }
+
+    const int selectedLag = selectedBpm > 0
+        ? qRound(envelopeRate * 60.0 / selectedBpm) : 0;
+    if (selectedLag > 0) result.bpm = 60.0 * envelopeRate / selectedLag;
+
     double secondCorrelation = 0;
-    for (int bpm = 60; bpm <= 200; ++bpm)
-        if (std::abs(bpm - bestBpm) > 4)
+    for (int bpm = 60; bpm <= 200; ++bpm) {
+        const bool sameTempo = std::abs(bpm - selectedBpm) <= 4;
+        const bool halfTempo = std::abs(2 * bpm - selectedBpm) <= 5;
+        const bool doubleTempo = std::abs(bpm - 2 * selectedBpm) <= 5;
+        if (!sameTempo && !halfTempo && !doubleTempo)
             secondCorrelation = qMax(secondCorrelation, tempoCorrelations[bpm]);
-    if (bestLag > 0) result.bpm = 60.0 * envelopeRate / bestLag;
+    }
     QVector<double> validTempoCorrelations;
     for (int bpm = 60; bpm <= 200; ++bpm)
         validTempoCorrelations.append(tempoCorrelations[bpm]);
     const double typicalCorrelation = percentile(validTempoCorrelations, .50);
-    const double prominence = (bestCorrelation - typicalCorrelation)
-        / qMax(1e-9, bestCorrelation);
-    const double separation = (bestCorrelation - secondCorrelation)
-        / qMax(1e-9, bestCorrelation);
+    const double prominence = (selectedCorrelation - typicalCorrelation)
+        / qMax(1e-9, selectedCorrelation);
+    const double separation = (selectedCorrelation - secondCorrelation)
+        / qMax(1e-9, selectedCorrelation);
     result.bpmConfidence = qBound(0.0,
         100.0 * (.75 * prominence + .25 * qMax(0.0, separation)), 100.0);
 
