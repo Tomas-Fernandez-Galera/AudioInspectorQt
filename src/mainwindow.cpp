@@ -425,7 +425,7 @@ void MainWindow::showAbout()
     auto *browser = new QTextBrowser(&dialog);
     configureDocumentViewer(browser);
     browser->setHtml(QStringLiteral("<h1>AudioInspector Qt</h1><p>Version %1</p>")
-        .arg(QStringLiteral("0.1.0"))
+        .arg(QStringLiteral("0.1.1"))
         + Localization::legalHtml(languageCode_)
         + Localization::principlesHtml(languageCode_));
     browser->moveCursor(QTextCursor::Start);

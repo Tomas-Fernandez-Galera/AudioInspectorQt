@@ -6,7 +6,7 @@ $ErrorActionPreference = "Stop"
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $buildDirectory = Join-Path $projectRoot "build-package"
 $distRoot = Join-Path $projectRoot "dist"
-$packageName = "AudioInspectorQt-0.1.0-Windows-x64"
+$packageName = "AudioInspectorQt-0.1.1-Windows-x64"
 $packageDirectory = Join-Path $distRoot $packageName
 $zipPath = Join-Path $distRoot ($packageName + ".zip")
 

@@ -1,5 +1,13 @@
 # AudioInspector Qt
 
+## Why does my audio file sound wrong?
+
+Before blaming the DAC, amplifier, cables or speakers, inspect the source.
+
+AudioInspector Qt turns the digital file into measurable evidence: waveform, clipping, sample and true peak, LUFS, dynamic range, stereo correlation, DC offset, spectral balance, silence, BPM and musical key estimates.
+
+It does not decide what should sound good or replace critical listening. It shows what is actually present in the file, separates direct measurements from estimates and explains the limitations of each result.
+
 AudioInspector Qt is a measurement-oriented desktop audio analyzer. It replaces ambiguous descriptions and untestable claims with reproducible measurements, verifiable graphs, documented methods and explicit uncertainty.
 
 AudioInspector Qt does not decide what listeners should enjoy and does not present subjective preference as physical fact. Its scope begins with the digital source file: playback hardware, transducers, rooms and human perception are later stages requiring their own measurements.
@@ -32,6 +40,28 @@ The application also generates a copyable technical report with plain-language c
 - Spectrogram, FFT graph and a copyable technical report with conclusions and stated limitations.
 - Light and dark themes and a localized measurement guide.
 
+## Screenshots
+
+### Complete analysis of the clean reference track
+
+![Complete clean-file analysis](docs/screenshots/full-analysis.png)
+
+### Sample-level waveform detail
+
+![Detailed waveform view](docs/screenshots/waveform-zoom.png)
+
+### Technical report for the clean reference
+
+![Clean-file technical report](docs/screenshots/technical-report.png)
+
+### Detecting a bad rip of the same track
+
+![Clipping, DC offset and subsonic energy detected](docs/screenshots/detected-faults.png)
+
+### Technical report for the bad rip
+
+![Bad-rip technical report](docs/screenshots/fault-report.png)
+
 ## Build on Windows
 
 Requirements:
@@ -49,6 +79,14 @@ Copyright © 2026 Tomás Fernández Galera.
 The source code is distributed under the [GNU General Public License version 3](LICENSE). The AudioInspector Qt name, icon and visual identity are not licensed under the GPL; see [TRADEMARKS.md](TRADEMARKS.md).
 
 ## Español
+
+### ¿Por qué suena mal mi archivo de audio?
+
+Antes de culpar al DAC, amplificador, cables o altavoces, conviene examinar la fuente.
+
+AudioInspector Qt convierte el archivo digital en datos comprobables: forma de onda, clipping, pico de muestra y true peak, LUFS, rango dinámico, correlación estéreo, componente DC, equilibrio espectral, silencios y estimaciones de BPM y tonalidad.
+
+No decide qué debe sonar bien ni sustituye a la escucha crítica. Muestra qué contiene realmente el archivo, separa las mediciones directas de las estimaciones y explica las limitaciones de cada resultado.
 
 AudioInspector Qt es un analizador de audio de escritorio orientado a la medición. Sustituye las descripciones ambiguas y las afirmaciones imposibles de comprobar por mediciones reproducibles, gráficos verificables, métodos documentados e indicaciones explícitas sobre su incertidumbre.
 
